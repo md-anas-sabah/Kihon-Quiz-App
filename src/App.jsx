@@ -58,33 +58,76 @@ function App() {
 
   const [error, setError] = useState(false);
 
-  const setRandomHirigana = () => {
+  const setRandomHiragana = () => {
     const randomIndex = Math.floor(Math.random() * hiragana.length);
     setCurrent(randomIndex);
   };
 
-  const handleChange = (evt) => {
-    setInput(evt.target.value);
+  const handleChange = (e) => {
+    setInput(e.target.value);
   };
 
-  const handleSubmit = (evt) => {
-    evt.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
     if (input.toLowerCase() === hiragana[current].romanji) {
       setStreak(streak + 1);
-      setMaxStreak(Math.max(streak, maxStreak));
+      setMaxStreak(streak + 1 > maxStreak ? streak + 1 : maxStreak);
       setError(false);
-      localStorage.setItem("maxStreak", Math.max(streak, maxStreak));
+
       localStorage.setItem("streak", streak + 1);
+      localStorage.setItem(
+        "maxStreak",
+        streak + 1 > maxStreak ? streak + 1 : maxStreak
+      );
     } else {
+      const h = hiragana[current].hiragana;
+      const r = hiragana[current].romanji;
+      setError(`Wrong! The correct answer for ${h} is ${r}`);
       setStreak(0);
-      setError(`Wrong! The correct answer is ${hiragana[current].romanji} `);
+      localStorage.setItem("streak", 0);
     }
+
+    setInput("");
+    setRandomHiragana();
   };
 
+  useEffect(() => {
+    setRandomHiragana();
+    setStreak(parseInt(localStorage.getItem("streak")) || 0);
+    setMaxStreak(parseInt(localStorage.getItem("maxStreak")) || 0);
+  }, []);
+
   return (
-    <div className="App">
-      <h1>Hello,World</h1>
+    <div className="min-h-screen bg-slate-800 text-white text-center">
+      <header className="p-6 mb-8">
+        <h1 className="text-2xl font-bold uppercase">Kihon Quiz</h1>
+        <div>
+          <p>
+            {streak} / {maxStreak}
+          </p>
+        </div>
+      </header>
+
+      <div className="text-9xl font-bold mb-8">
+        <p>{hiragana[current].hiragana}</p>
+      </div>
+
+      <div className="mb-8">
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            onChange={handleChange}
+            value={input}
+            className="block w-24 bg-transparent border-b-2 border-b-white mx-auto outline-none text-center text-6xl pb-2"
+          />
+        </form>
+      </div>
+      {error && (
+        <div>
+          <p>{error}</p>
+        </div>
+      )}
     </div>
   );
 }
